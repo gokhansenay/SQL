@@ -88,3 +88,38 @@ inner join customers c on o."CustomerID"=c."CustomerID"
 inner join order_details od on od."OrderID"=o."OrderID"
 inner join products p on od."ProductID"=p."ProductID"
 group by o."OrderID"
+
+-- en çok satılan ürünleri çoktan aza doğru sıralayalım.
+-- order_details ile products tablosu üzerinde çalışacağız. products tablosundan product name ve product category'i alalım.
+
+select distinct "ProductID" from order_details -- sonuç 77
+select * from products -- sonuç 77 dolayısı ile hiç satılmayan yok
+
+select od."OrderID",p."CategoryID",od."ProductID",p."ProductName",od."UnitPrice",od."Quantity" from order_details od
+inner join products p
+on od."ProductID"=p."ProductID"
+
+--category bazında sıralama
+select p."CategoryID",sum(od."Quantity") from order_details od
+inner join products p
+on od."ProductID"=p."ProductID"
+group by p."CategoryID"
+order by sum(od."Quantity") desc
+
+-- urun ID bazında sıralama
+select od."ProductID",sum(od."Quantity") as toplam from order_details od
+inner join products p
+on od."ProductID"=p."ProductID"
+group by od."ProductID"
+order by toplam desc
+
+-- ProductName bazında sıralama
+select p."ProductName",sum(od."Quantity") from order_details od
+inner join products p
+on od."ProductID"=p."ProductID"
+group by p."ProductName"
+order by sum(od."Quantity") desc
+
+
+
+
