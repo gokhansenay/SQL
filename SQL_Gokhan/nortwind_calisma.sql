@@ -40,35 +40,51 @@ set "ProductName"='ccbb',"SupplierID"=45 where "ProductID"=78
 delete from products where "ProductID"=78
 
 
-select "CategoryID",count(*) from products
-group by "CategoryID"
-order by "CategoryID"
-
-select "ProductID","ProductName","UnitPrice" from products
-where "ProductID" in (select max(count())"ProductID" from order_details)
-
-
-select "ProductID" from 
-
-select "ProductID",count("OrderID") as sipsayisi, sum("Quantity") as tmiktar from order_details
-group by "ProductID"
-order by tmiktar desc
-
-
-
-select count("ProductID") from products
-
-select * from customers
-select * from orders
-
 select * from orders inner join customers
 on orders."CustomerID"=customers."CustomerID"
 
-select orders."OrderID",orders."CustomerID",customers."ContactName" from orders 
-inner join customers
+-- orders tablosunda müsteri ismi yoktu, inner join yaptık
+select orders."CustomerID",customers."ContactName",orders."OrderDate" from orders inner join customers
 on orders."CustomerID"=customers."CustomerID"
 
-select orders."OrderID",orders."CustomerID",customers."ContactName" from customers 
-left join orders
-on orders."CustomerID"=customers."CustomerID"
+-- orders o diye customers c diye kısaltma yaptık
 
+select o."OrderID",o."CustomerID",c."ContactName",o."OrderDate" from orders o inner join customers c
+on o."CustomerID"=c."CustomerID"
+
+-- London daki müşterilerin yaptıgı siparişler
+select o."OrderID",o."CustomerID",c."ContactName",o."OrderDate",c."City" from orders o inner join customers c
+on o."CustomerID"=c."CustomerID"
+where c."City"='London'
+order by "ContactName"
+
+-- şimdi de hangi ürünleri aldığını listelemek için order_details tablosuna gitmemiz gerekiyor
+
+select o."OrderID",o."CustomerID",c."ContactName",od."ProductID",o."OrderDate",c."City" from orders o inner join customers c
+on o."CustomerID"=c."CustomerID"
+inner join order_details od on od."OrderID"=o."OrderID"
+order by "ContactName"
+
+-- şimdi de products tablosuna gidip, ürünlerin ismini alalım.
+
+select o."OrderID",o."CustomerID",c."ContactName",od."ProductID",p."ProductName",o."OrderDate",c."City" from orders o
+inner join customers c on o."CustomerID"=c."CustomerID"
+inner join order_details od on od."OrderID"=o."OrderID"
+inner join products p on od."ProductID"=p."ProductID"
+order by "ContactName"
+
+-- şimdi de siparişi yaptıgı zaman bu ürünün fiyatı nedir.burada bir daha join yapmıyoruz
+
+select o."OrderID",o."CustomerID",c."ContactName",od."ProductID",p."ProductName",(od."UnitPrice"*od."Quantity") total,o."OrderDate",c."City" from orders o 
+inner join customers c on o."CustomerID"=c."CustomerID"
+inner join order_details od on od."OrderID"=o."OrderID"
+inner join products p on od."ProductID"=p."ProductID"
+order by "ContactName"
+
+-- şimdi de sipariş nosuna göre gruplayıp her siparişte toplam ödemeleri bulalım
+
+select o."OrderID",o."CustomerID",sum(od."UnitPrice"*od."Quantity") total,o."OrderDate" from orders o 
+inner join customers c on o."CustomerID"=c."CustomerID"
+inner join order_details od on od."OrderID"=o."OrderID"
+inner join products p on od."ProductID"=p."ProductID"
+group by o."OrderID"
